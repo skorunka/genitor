@@ -1,6 +1,7 @@
 namespace Genitor.Library.Core.Localization
 {
 	using System;
+	using System.Collections.Concurrent;
 	using System.Collections.Generic;
 	using System.ComponentModel.DataAnnotations;
 	using System.Diagnostics;
@@ -13,7 +14,7 @@ namespace Genitor.Library.Core.Localization
 
 	public static class LocalizationHelper
 	{
-		private static readonly IDictionary<string/*Type.FullName*/, LocalizedEntityMetadata> _sCache;
+		private static readonly ConcurrentDictionary<string/*Type.FullName*/, LocalizedEntityMetadata> _sCache;
 
 		/// <summary>
 		/// Critical: must be valid CultureInfo code.
@@ -61,8 +62,7 @@ namespace Genitor.Library.Core.Localization
 				}
 			}
 
-			_sCache = new Dictionary<string, LocalizedEntityMetadata>();
-
+			_sCache = new ConcurrentDictionary<string, LocalizedEntityMetadata>();
 			ScanAssembly(Assembly.GetExecutingAssembly());
 		}
 
@@ -87,7 +87,13 @@ namespace Genitor.Library.Core.Localization
 				.ToDictionary(GetEntityKey, t => new LocalizedEntityMetadata(t))
 				.Where(x => x.Value.Properties.Count > 0);
 
-			_sCache.AddRange(metadatas);
+			lock (_sCache)
+			{
+				foreach (var metadata in metadatas)
+				{
+					_sCache.TryAdd(metadata.Key, metadata.Value);
+				}
+			}
 		}
 
 		public static LocalizedEntityMetadata GetLocalizedEntityMetadata<TEntity>()

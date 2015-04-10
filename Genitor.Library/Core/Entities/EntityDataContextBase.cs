@@ -5,12 +5,11 @@ namespace Genitor.Library.Core.Entities
 	using System.Data;
 	using System.Data.Common;
 	using System.Data.Entity;
+	using System.Data.Entity.Core.Objects;
 	using System.Data.Entity.Infrastructure;
-	using System.Data.Objects;
 	using System.Linq;
 
 	using Genitor.Library.Core.Data;
-	using Genitor.Library.Core.Entities.Localization;
 
 	public abstract class EntityDataContextBase : DbContext, IDbContext
 	{

@@ -1,19 +1,15 @@
 ﻿// ReSharper disable InconsistentNaming
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
-using System.Linq;
-using System.Reflection;
-using FluentAssertions;
-using Genitor.Library.Core;
-using Genitor.Library.Core.Entities.Geo;
-using Genitor.Library.Core.Entities.Localization;
-using Genitor.Library.Tests.Db;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Genitor.Library.Tests.IntegrationTests
 {
+	using System;
+	using System.ComponentModel.DataAnnotations;
+	using System.Linq;
+	using System.Reflection;
+
+	using Genitor.Library.Core.Entities.Localization;
 	using Genitor.Library.Core.Localization;
+
+	using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 	#region Localizable test classes
 
@@ -68,8 +64,8 @@ namespace Genitor.Library.Tests.IntegrationTests
 		{
 			LocalizationHelper.ScanAssembly(Assembly.GetExecutingAssembly());
 
-			CheckCommonLocalizationRulesOnType(typeof(LocalizableClass_ByProperties));
-			CheckCommonLocalizationRulesOnType(typeof(LocalizableClass_ByMetaData));
+			this.CheckCommonLocalizationRulesOnType(typeof(LocalizableClass_ByProperties));
+			this.CheckCommonLocalizationRulesOnType(typeof(LocalizableClass_ByMetaData));
 
 			var localizableClass_Complex = LocalizationHelper.GetLocalizedEntityMetadata(typeof(LocalizableClass_Complex).FullName);
 
