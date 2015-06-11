@@ -1,12 +1,21 @@
-﻿// ReSharper disable InconsistentNaming
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright company="" file="EntityLocalizationTests.cs">
+//   
+// </copyright>
+// 
+// --------------------------------------------------------------------------------------------------------------------
+
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
+
 using Genitor.Library.Core.Entities;
 using Genitor.Library.Core.Entities.Geo;
 using Genitor.Library.Core.Entities.Localization;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Genitor.Library.Tests.UnitTests
@@ -55,20 +64,20 @@ namespace Genitor.Library.Tests.UnitTests
 
 			public T SaveAndLoadEntity<T>(T entity) where T : EntityBase
 			{
-				Set<T>().Add(entity);
+				this.Set<T>().Add(entity);
 
-				SaveChanges();
+				this.SaveChanges();
 
-				return Set<T>().Find(entity.Id);
+				return this.Set<T>().Find(entity.Id);
 			}
 
 			public T SaveAndLoadLocalizedEntity<T>(T entity) where T : LocalizedEntityBase
 			{
-				Set<T>().Add(entity);
+				this.Set<T>().Add(entity);
 
-				SaveChanges();
+				this.SaveChanges();
 
-				return Set<T>().Find(entity.Id);
+				return this.Set<T>().Find(entity.Id);
 			}
 
 			public void ReCreate()
@@ -76,12 +85,12 @@ namespace Genitor.Library.Tests.UnitTests
 				this.Database.Delete();
 				this.Database.CreateIfNotExists();
 
-				Languages.Add(new Language { Code = "en", NativeName = "English", Name = "English" });
-				Languages.Add(new Language { Code = "cs", NativeName = "Čeština", Name = "Czech" });
+				this.Languages.Add(new Language { Code = "en", NativeName = "English", Name = "English" });
+				this.Languages.Add(new Language { Code = "cs", NativeName = "Čeština", Name = "Czech" });
 
-				Currencies.Add(new Currency { Code = "CZK", Name = "Koruna", ExchangeRate = 1, Num = 1, NativeName = "Koruna" });
+				this.Currencies.Add(new Currency { Code = "CZK", Name = "Koruna", ExchangeRate = 1, Num = 1, NativeName = "Koruna" });
 
-				SaveChanges();
+				this.SaveChanges();
 			}
 		}
 

@@ -47,6 +47,10 @@
 
 	public abstract class LocalizationDataContextBase : EntityDataContextBase, ILocalizationDataContext
 	{
+		protected LocalizationDataContextBase(string v = null) : base(v)
+		{
+		}
+
 		#region Public Properties
 
 		public string DefaultLanguageCode
@@ -212,13 +216,13 @@
 					{
 						this.Localizations.Add(
 							new Localization
-								{
-									EntityName = entityKey,
-									EntityPkValue = localizedEntity.Id,
-									EntityPropertyName = prop.First,
-									LanguageCode = localizedEntity.LanguageCode,
-									Text = value
-								});
+							{
+								EntityName = entityKey,
+								EntityPkValue = localizedEntity.Id,
+								EntityPropertyName = prop.First,
+								LanguageCode = localizedEntity.LanguageCode,
+								Text = value
+							});
 					}
 
 					if (entry.State != EntityState.Modified)

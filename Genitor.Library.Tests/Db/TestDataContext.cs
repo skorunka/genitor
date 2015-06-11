@@ -15,5 +15,9 @@ namespace Genitor.Library.Tests.Db
 		public DbSet<City> Cities { get; set; }
 
 		#endregion
+
+		public TestDataContext(string v) : base(v)
+		{
+		}
 	}
 }

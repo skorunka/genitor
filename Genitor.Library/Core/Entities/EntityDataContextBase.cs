@@ -9,17 +9,24 @@ namespace Genitor.Library.Core.Entities
 	using System.Data.Entity.Infrastructure;
 	using System.Linq;
 
-	using Genitor.Library.Core.Data;
+	using Data;
 
 	public abstract class EntityDataContextBase : DbContext, IDbContext
 	{
-		public ObjectContext ObjectContext
+		#region ctors
+
+		protected EntityDataContextBase()
 		{
-			get
-			{
-				return ((IObjectContextAdapter)this).ObjectContext;
-			}
 		}
+
+		protected EntityDataContextBase(string nameOrConnectionString)
+			: base(nameOrConnectionString)
+		{
+		}
+
+		#endregion
+
+		public ObjectContext ObjectContext => ((IObjectContextAdapter)this).ObjectContext;
 
 		public new IDbSet<TEntity> Set<TEntity>() where TEntity : EntityBase
 		{
