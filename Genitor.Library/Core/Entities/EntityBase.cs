@@ -10,13 +10,13 @@
 
 		protected EntityBase()
 		{
-			this.CreatedOnUtc = DateTime.Now;
+			this.CreatedOnUtc = DateTime.UtcNow;
 		}
 
 		#endregion
 
 		[Key, Required]
-		public int Id { get; }
+		public int Id { get; set; }
 
 		public DateTime CreatedOnUtc { get; set; }
 

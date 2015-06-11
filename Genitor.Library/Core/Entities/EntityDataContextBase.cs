@@ -160,13 +160,13 @@ namespace Genitor.Library.Core.Entities
 			switch (entry.State)
 			{
 				case EntityState.Added:
-					entityBase.CreatedOnUtc = DateTime.Now;
+					entityBase.CreatedOnUtc = DateTime.UtcNow;
 					entityBase.UpdatedOnUtc = null;
 					entityBase.ArchivedOnUtc = null;
 					break;
 
 				case EntityState.Modified:
-					entityBase.UpdatedOnUtc = DateTime.Now;
+					entityBase.UpdatedOnUtc = DateTime.UtcNow;
 					entityBase.ArchivedOnUtc = null;
 					break;
 
@@ -176,7 +176,7 @@ namespace Genitor.Library.Core.Entities
 						return;
 					}
 
-					entityBase.ArchivedOnUtc = DateTime.Now;
+					entityBase.ArchivedOnUtc = DateTime.UtcNow;
 					entry.State = EntityState.Modified;
 					break;
 			}

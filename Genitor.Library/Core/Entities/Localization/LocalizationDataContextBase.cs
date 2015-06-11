@@ -47,9 +47,19 @@
 
 	public abstract class LocalizationDataContextBase : EntityDataContextBase, ILocalizationDataContext
 	{
-		protected LocalizationDataContextBase(string v = null) : base(v)
+		#region ctors
+
+		protected LocalizationDataContextBase()
 		{
 		}
+
+		protected LocalizationDataContextBase(string nameOrConnectionString)
+			: base(nameOrConnectionString)
+		{
+		}
+
+		#endregion
+
 
 		#region Public Properties
 

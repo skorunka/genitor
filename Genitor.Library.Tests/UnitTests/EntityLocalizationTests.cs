@@ -244,7 +244,7 @@ namespace Genitor.Library.Tests.UnitTests
 			{
 				var entity = db.LocalizedEntities.First();
 				entity.LanguageCode = "cs";
-				entity.ArchivedOnUtc = DateTime.Now;
+				entity.ArchivedOnUtc = DateTime.UtcNow;
 				db.LocalizedEntities.Remove(entity);
 				db.SaveChanges();
 			}
@@ -277,7 +277,7 @@ namespace Genitor.Library.Tests.UnitTests
 			using (var db = new TestDataContext())
 			{
 				var entity = db.LocalizedEntities.First();
-				entity.ArchivedOnUtc = DateTime.Now; // force delete
+				entity.ArchivedOnUtc = DateTime.UtcNow; // force delete
 				db.LocalizedEntities.Remove(entity);
 				db.SaveChanges();
 			}

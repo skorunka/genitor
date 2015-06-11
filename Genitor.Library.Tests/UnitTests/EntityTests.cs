@@ -19,7 +19,7 @@ namespace Genitor.Library.Tests.UnitTests
 				db.NotLocalizedEntities.Add(entity);
 				var entityLoaded = db.SaveAndLoadEntity(entity);
 
-				Assert.IsTrue(entityLoaded.CreatedOnUtc <= DateTime.Now);
+				Assert.IsTrue(entityLoaded.CreatedOnUtc <= DateTime.UtcNow);
 			}
 		}
 
@@ -76,7 +76,7 @@ namespace Genitor.Library.Tests.UnitTests
 			{
 				db.ReCreate();
 				var entity = db.Currencies.Find(1);
-				entity.ArchivedOnUtc = DateTime.Now;
+				entity.ArchivedOnUtc = DateTime.UtcNow;
 				db.Currencies.Remove(entity);
 				db.SaveChanges();
 			}
