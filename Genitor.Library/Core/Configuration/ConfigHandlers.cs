@@ -1,14 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Configuration;
-
+#pragma warning disable SA1201 // Elements must appear in the correct order
 namespace Genitor.Library.Core.Configuration
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Configuration;
+	using System.Globalization;
+	using System.IO;
+	using System.Linq;
+	using System.Text;
+	using System.Text.RegularExpressions;
+
 	public static class ConfigHandlers
 	{
 		public static string StringHandler(string value)
@@ -44,7 +45,10 @@ namespace Genitor.Library.Core.Configuration
 		{
 			short decValue;
 			if (!short.TryParse(value, NumberStyles.Currency, CultureInfo.InvariantCulture, out decValue))
+			{
 				throw new ConfigInvalidValueException("Short");
+			}
+
 			return decValue;
 		}
 
@@ -59,10 +63,14 @@ namespace Genitor.Library.Core.Configuration
 				value = value.Substring(2);
 			}
 			else
+			{
 				numberStyle = NumberStyles.Integer;
+			}
 
-			if (!Int32.TryParse(value, numberStyle, CultureInfo.InvariantCulture, out retVal))
+			if (!int.TryParse(value, numberStyle, CultureInfo.InvariantCulture, out retVal))
+			{
 				throw new ConfigInvalidValueException("Int32");
+			}
 
 			return retVal;
 		}
@@ -70,32 +78,43 @@ namespace Genitor.Library.Core.Configuration
 		public static double DoubleHandler(string value)
 		{
 			double doubleValue;
-			if (!Double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue))
+			if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleValue))
+			{
 				throw new ConfigInvalidValueException("Double");
+			}
+
 			return doubleValue;
 		}
 
 		public static decimal DecimalHandler(string value)
 		{
 			decimal decValue;
-			if (!Decimal.TryParse(value, NumberStyles.Currency, CultureInfo.InvariantCulture, out decValue))
+			if (!decimal.TryParse(value, NumberStyles.Currency, CultureInfo.InvariantCulture, out decValue))
+			{
 				throw new ConfigInvalidValueException("Decimal");
+			}
+
 			return decValue;
 		}
 
-		private static readonly Regex _sInt32RangeRegex = new Regex(@"^\s*(\d+)\s*(?:\-\s*(\d+))?\s*$");
+		private static readonly Regex Int32RangeRegex = new Regex(@"^\s*(\d+)\s*(?:\-\s*(\d+))?\s*$");
+
 		public static Range<int> Int32RangeHandler(string value)
 		{
-			var match = _sInt32RangeRegex.Match(value);
+			var match = Int32RangeRegex.Match(value);
 			int from, to;
 
-			if (!Int32.TryParse(match.Groups[1].Value, out from))
+			if (!int.TryParse(match.Groups[1].Value, out from))
+			{
 				throw new ConfigInvalidValueException("Int32Range");
+			}
 
 			if (match.Groups[2].Length > 0)
 			{
-				if (!Int32.TryParse(match.Groups[2].Value, out to))
+				if (!int.TryParse(match.Groups[2].Value, out to))
+				{
 					throw new ConfigInvalidValueException("Int32Range");
+				}
 			}
 			else
 			{
@@ -105,19 +124,24 @@ namespace Genitor.Library.Core.Configuration
 			return new Range<int>(from, to);
 		}
 
-		private static readonly Regex _sTimeSpanVerboseRegex = new Regex(@"^\s*(?:(\d+)(d|h|m|s|ms)\s*)+$");
-		//private static readonly Regex sTimeSpanDotNetRegex = new Regex(@"^\s*(?:(?<d0>\d+)|(?<d1>\d+\.)?(?<h>\d+)\:(?<m>\d+)(?:\:(?<s>\d+)(?:\.(?<ms>\d+))?)?)\s*$");
+		private static readonly Regex TimeSpanVerboseRegex = new Regex(@"^\s*(?:(\d+)(d|h|m|s|ms)\s*)+$");
+		//// private static readonly Regex sTimeSpanDotNetRegex = new Regex(@"^\s*(?:(?<d0>\d+)|(?<d1>\d+\.)?(?<h>\d+)\:(?<m>\d+)(?:\:(?<s>\d+)(?:\.(?<ms>\d+))?)?)\s*$");
+
 		public static TimeSpan TimeSpanHandler(string value)
 		{
 			// nejdriv zkusime nas format (10h 15m)
-			var match = _sTimeSpanVerboseRegex.Match(value);
+			var match = TimeSpanVerboseRegex.Match(value);
 			if (match.Success)
+			{
 				return ParseVerboseFormat(match);
+			}
 
 			// kdyz neprojde, zkusime .net format (10:15)
 			TimeSpan result;
 			if (TimeSpan.TryParse(value, out result))
+			{
 				return result;
+			}
 
 			throw new ConfigInvalidValueException("TimeSpan");
 		}
@@ -126,12 +150,12 @@ namespace Genitor.Library.Core.Configuration
 		{
 			long ticks = 0;
 
-			for (int i = 0; i < match.Groups[1].Captures.Count; ++i)
+			for (var i = 0; i < match.Groups[1].Captures.Count; ++i)
 			{
-				string amountStr = match.Groups[1].Captures[i].Value;
-				string units = match.Groups[2].Captures[i].Value;
+				var amountStr = match.Groups[1].Captures[i].Value;
+				var units = match.Groups[2].Captures[i].Value;
 
-				int amount = Int32.Parse(amountStr);
+				var amount = int.Parse(amountStr);
 
 				switch (units)
 				{
@@ -150,9 +174,14 @@ namespace Genitor.Library.Core.Configuration
 		{
 			value = value.Trim().ToLowerInvariant();
 			if (value == "true" || value == "yes" || value == "on" || value == "1")
+			{
 				return true;
+			}
+
 			if (value == "false" || value == "no" || value == "off" || value == "0")
+			{
 				return false;
+			}
 
 			throw new ConfigInvalidValueException("Bool");
 		}
@@ -163,16 +192,20 @@ namespace Genitor.Library.Core.Configuration
 
 			var dir = Path.GetDirectoryName(path);
 			if (dir != null && !Directory.Exists(dir))
+			{
 				Directory.CreateDirectory(dir);
+			}
 
 			return path;
 		}
 
 		public static string ConnectionStringHandler(string connStringName)
 		{
-			ConnectionStringSettings connStr = ConfigurationManager.ConnectionStrings[connStringName];
+			var connStr = ConfigurationManager.ConnectionStrings[connStringName];
 			if (connStr == null)
-				throw new ConfigInvalidValueException(String.Format("Connection string named '{0}' was not found in configuration.", connStringName));
+			{
+				throw new ConfigInvalidValueException(string.Format("Connection string named '{0}' was not found in configuration.", connStringName));
+			}
 
 			return connStr.ConnectionString;
 		}
@@ -191,14 +224,14 @@ namespace Genitor.Library.Core.Configuration
 
 		public static IList<string> CsvHandler(string value)
 		{
-			return value.Split(new[] { ',' });
+			return value.Split(',');
 		}
 
 		public static IDictionary<string, string> StringDictionaryHandler(string value)
 		{
 			return
-				value.Split(new[] { ';' })
-					.Where(o => !String.IsNullOrEmpty(o))
+				value.Split(';')
+					.Where(o => !string.IsNullOrEmpty(o))
 					.Select(o => o.Split('='))
 					.Where(o => o.Length > 1)
 					.ToDictionary(k => k[0], v => v[1]);
@@ -207,31 +240,69 @@ namespace Genitor.Library.Core.Configuration
 		public static string GetHandlerName(Type fieldType)
 		{
 			if (fieldType == typeof(string))
+			{
 				return "StringHandler";
+			}
+
 			if (fieldType == typeof(Regex))
+			{
 				return "RegexHandler";
+			}
+
 			if (fieldType == typeof(Encoding))
+			{
 				return "EncodingHandler";
+			}
+
 			if (fieldType == typeof(short))
+			{
 				return "Int16Handler";
+			}
+
 			if (fieldType == typeof(int))
+			{
 				return "Int32Handler";
+			}
+
 			if (fieldType == typeof(double))
+			{
 				return "DoubleHandler";
+			}
+
 			if (fieldType == typeof(decimal))
+			{
 				return "DecimalHandler";
+			}
+
 			if (fieldType == typeof(Range<int>))
+			{
 				return "Int32RangeHandler";
+			}
+
 			if (fieldType == typeof(TimeSpan))
+			{
 				return "TimeSpanHandler";
+			}
+
 			if (fieldType == typeof(bool))
+			{
 				return "BoolHandler";
+			}
+
 			if (fieldType.IsSubclassOf(typeof(Enum)))
+			{
 				return "EnumHandler";
+			}
+
 			if (fieldType == typeof(IDictionary<string, string>))
+			{
 				return "StringDictionaryHandler";
+			}
+
 			if (fieldType == typeof(IList<string>))
+			{
 				return "CsvHandler";
+			}
 
 			return null;
 		}

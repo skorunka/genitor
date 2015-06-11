@@ -22,7 +22,7 @@ namespace Genitor.Library.MVC.Attributes
 			//// Support for HtmlHelperExtensions.NamedValidationSummary().
 			filterContext.Controller.ViewData[HtmlHelperExtensions.SubmittedFormName] = filterContext.Controller.TempData[HtmlHelperExtensions.SubmittedFormName];
 
-			var modelState = filterContext.Controller.TempData[ModelStateTempDataTransferAttribute.Key] as ModelStateDictionary;
+			var modelState = filterContext.Controller.TempData[Key] as ModelStateDictionary;
 
 			if (modelState != null)
 			{
@@ -45,7 +45,7 @@ namespace Genitor.Library.MVC.Attributes
 				else
 				{
 					// Otherwise remove it.
-					filterContext.Controller.TempData.Remove(ModelStateTempDataTransferAttribute.Key);
+					filterContext.Controller.TempData.Remove(Key);
 				}
 			}
 

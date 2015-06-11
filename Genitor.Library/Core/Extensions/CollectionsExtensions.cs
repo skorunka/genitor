@@ -1,6 +1,5 @@
-﻿// ReSharper disable CheckNamespace
+﻿//// ReSharper disable CheckNamespace
 namespace Genitor.Library.Core
-// ReSharper restore CheckNamespace
 {
 	using System;
 	using System.Collections.Generic;
@@ -87,7 +86,6 @@ namespace Genitor.Library.Core
 			return !instance.Any();
 		}
 
-
 		public static IEnumerable<T> AsNullIfEmpty<T>(this IList<T> items)
 		{
 			return items.IsNullOrEmpty() ? null : items;
@@ -117,8 +115,7 @@ namespace Genitor.Library.Core
 		}
 
 		/// <summary>
-		/// ForEach extension that enumerates over all items in an <see cref="IEnumerable{T}"/> and executes 
-		/// an action.
+		/// ForEach extension that enumerates over all items in an <see cref="IEnumerable{T}"/> and executes an action.
 		/// </summary>
 		/// <typeparam name="T">The type that this extension is applicable for.</typeparam>
 		/// <param name="collection">The enumerable instance that this extension operates on.</param>
@@ -137,8 +134,7 @@ namespace Genitor.Library.Core
 		}
 
 		/// <summary>
-		/// ForEach extension that enumerates over all items in an <see cref="IEnumerator{T}"/> and executes 
-		/// an action.
+		/// ForEach extension that enumerates over all items in an <see cref="IEnumerator{T}"/> and executes an action.
 		/// </summary>
 		/// <typeparam name="T">The type that this extension is applicable for.</typeparam>
 		/// <param name="collection">The enumerator instance that this extension operates on.</param>
@@ -157,8 +153,7 @@ namespace Genitor.Library.Core
 		}
 
 		/// <summary>
-		/// For Each extension that enumerates over a enumerable collection and attempts to execute 
-		/// the provided action delegate and it the action throws an exception, continues enumerating.
+		/// For Each extension that enumerates over a enumerable collection and attempts to execute the provided action delegate and it the action throws an exception, continues enumerating.
 		/// </summary>
 		/// <typeparam name="T">The type that this extension is applicable for.</typeparam>
 		/// <param name="enumerator">The IEnumerable instance that the extension operates on.</param>
@@ -176,7 +171,10 @@ namespace Genitor.Library.Core
 				{
 					action(item);
 				}
-				catch { }
+				catch
+				{
+					// ignored
+				}
 			}
 		}
 
@@ -200,7 +198,10 @@ namespace Genitor.Library.Core
 				{
 					action(enumerator.Current);
 				}
-				catch { }
+				catch
+				{
+					// ignored
+				}
 			}
 		}
 	}

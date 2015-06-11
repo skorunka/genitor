@@ -31,20 +31,20 @@ namespace Genitor.Library.Core.Configuration
 
 		#region Public Properties
 
-		public string Key { get; private set; }
+		public string Key { get; }
 
 		public override string Message
 		{
 			get
 			{
-				return String.Format(
+				return string.Format(
 					"Key '{0}' in configuration section '<{1}>' is not of type '{2}'", this.Key, this.Section, this.Type);
 			}
 		}
 
-		public string Section { get; private set; }
+		public string Section { get; }
 
-		public string Type { get; private set; }
+		public string Type { get; }
 
 		#endregion
 
@@ -55,7 +55,7 @@ namespace Genitor.Library.Core.Configuration
 		{
 			if (info == null)
 			{
-				throw new ArgumentNullException("info");
+				throw new ArgumentNullException(nameof(info));
 			}
 
 			info.AddValue("Section", this.Section);

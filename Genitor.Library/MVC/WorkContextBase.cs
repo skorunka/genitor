@@ -28,7 +28,7 @@
 		{
 			get
 			{
-				return LocalizationHelper.sEnabledCultureInfos;
+				return LocalizationHelper.EnabledCultureInfos;
 			}
 		}
 
@@ -48,7 +48,7 @@
 			}
 		}
 
-		public Localizer T { get; private set; }
+		public Localizer T { get; }
 
 		public void AddFlashMessage(MessageTypes messageType, LocalizedString localizedString)
 		{

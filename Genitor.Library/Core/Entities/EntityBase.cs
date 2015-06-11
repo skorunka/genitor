@@ -16,7 +16,7 @@
 		#endregion
 
 		[Key, Required]
-		public int Id { get; set; }
+		public int Id { get; }
 
 		public DateTime CreatedOnUtc { get; set; }
 
@@ -26,7 +26,7 @@
 
 		public static bool operator ==(EntityBase x, EntityBase y)
 		{
-			return object.Equals(x, y);
+			return Equals(x, y);
 		}
 
 		public static bool operator !=(EntityBase x, EntityBase y)
@@ -53,7 +53,7 @@
 
 			if (!IsTransient(this) &&
 				!IsTransient(other) &&
-				object.Equals(this.Id, other.Id))
+				Equals(this.Id, other.Id))
 			{
 				var otherType = other.GetUnproxiedType();
 				var thisType = this.GetUnproxiedType();
@@ -65,7 +65,7 @@
 
 		public override int GetHashCode()
 		{
-			return object.Equals(this.Id, default(int)) ? base.GetHashCode() : this.Id.GetHashCode();
+			return Equals(this.Id, default(int)) ? base.GetHashCode() : this.Id.GetHashCode();
 		}
 
 		public bool IsNew()
@@ -80,12 +80,12 @@
 
 		private static bool IsTransient(EntityBase obj)
 		{
-			return obj != null && object.Equals(obj.Id, default(int));
+			return obj != null && Equals(obj.Id, default(int));
 		}
 
 		private Type GetUnproxiedType()
 		{
-			return GetType();
+			return this.GetType();
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿namespace Genitor.Library.Core
+﻿#pragma warning disable SA1402 // File may only contain a single class
+namespace Genitor.Library.Core
 {
 	using System;
 	using System.Collections.Generic;
@@ -11,8 +12,7 @@
 	public class Range<T> : IComparable<Range<T>>, IComparable<T>, IComparable where T : IComparable<T>
 	{
 		#region Declarations
-		private readonly T _lowerBound;
-		private readonly T _upperBound;
+
 		#endregion
 
 		#region Constructors
@@ -27,8 +27,8 @@
 			Guard.IsNotNull(upperBound, "upperBound");
 			Guard.IsTrue(lowerBound.CompareTo(upperBound) <= 0, "lowerBound");
 
-			_lowerBound = lowerBound;
-			_upperBound = upperBound;
+			this.LowerBound = lowerBound;
+			this.UpperBound = upperBound;
 		}
 		#endregion
 
@@ -36,261 +36,13 @@
 		/// <summary>
 		/// The start of the range.
 		/// </summary>
-		public T LowerBound
-		{
-			get
-			{
-				return _lowerBound;
-			}
-		}
+		public T LowerBound { get; }
 
 		/// <summary>
 		/// The upper bound of the range.
 		/// </summary>
-		public T UpperBound
-		{
-			get
-			{
-				return _upperBound;
-			}
-		}
-		#endregion
+		public T UpperBound { get; }
 
-		#region Methods
-		/// <summary>
-		/// Indicates if the range contains <code>value</code>.
-		/// </summary>
-		/// <param name="value">The value to look for.</param>
-		/// <returns>true if the range contains <code>value</code>, false otherwise.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		public bool Contains(T value)
-		{
-			Guard.IsNotNull(value, "value");
-
-			return ((LowerBound.CompareTo(value) <= 0) && (UpperBound.CompareTo(value) >= 0));
-		}
-
-		/// <summary>
-		/// Indicates if the range contains <code>value</code>.
-		/// </summary>
-		/// <param name="value">A range to test.</param>
-		/// <returns>true if the entire range in <code>value</code> is within this range.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		public bool Contains(Range<T> value)
-		{
-			Guard.IsNotNull(value, "value");
-
-			return ((LowerBound.CompareTo(value.LowerBound) <= 0) && (UpperBound.CompareTo(value.UpperBound) >= 0));
-		}
-
-		/// <summary>
-		/// Indicates if the range is contained by <code>value</code>.
-		/// </summary>
-		/// <param name="value">A range to test.</param>
-		/// <returns>true if the entire range is within <code>value</code>.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		public bool IsContainedBy(Range<T> value)
-		{
-			Guard.IsNotNull(value, "value");
-
-			return value.Contains(this);
-		}
-
-		/// <summary>
-		/// Indicates if the range overlaps <code>value</code>.
-		/// </summary>
-		/// <param name="value">A range to test.</param>
-		/// <returns>true if any of the range in <code>value</code> is within this range.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		public bool Overlaps(Range<T> value)
-		{
-			Guard.IsNotNull(value, "value");
-
-			return (Contains(value.LowerBound) || Contains(value.UpperBound) || value.Contains(LowerBound) || value.Contains(UpperBound));
-		}
-
-		/// <summary>
-		/// Returns the range that represents the intersection of this range and <code>value</code>.
-		/// </summary>
-		/// <param name="value">The range to intersect with.</param>
-		/// <returns>A range that contains the values that are common in both ranges, or null if there is no intersection.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		/// <exception cref="System.ArgumentException"><code>value</code> does not overlap the range.</exception>
-		public Range<T> Intersect(Range<T> value)
-		{
-			Guard.IsNotNull(value, "value");
-			Guard.IsTrue(Overlaps(value), "value");    // Intersect makes no sense unless there is an overlap
-
-			var start = LowerBound.CompareTo(value.LowerBound) > 0 ? LowerBound : value.LowerBound;
-			return UpperBound.CompareTo(value.UpperBound) < 0 ? new Range<T>(start, UpperBound) : new Range<T>(start, value.UpperBound);
-		}
-
-		/// <summary>
-		/// Returns the range that represents the union of this range and <code>value</code>.
-		/// </summary>
-		/// <param name="value">The range to union with.</param>
-		/// <returns>A range that contains both ranges, or null if there is no union.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		/// <exception cref="System.ArgumentException"><code>value</code> is not contiguous with the range.</exception>
-		public Range<T> Union(Range<T> value)
-		{
-			Guard.IsNotNull(value, "value");
-			Guard.IsTrue(IsContiguousWith(value), "value");    // Union makes no sense unless there is a contiguous border
-
-			// If either one is a subset of the other, then is it the union
-			if (Contains(value))
-			{
-				return this;
-			}
-			if (value.Contains(this))
-			{
-				return value;
-			}
-			var start = LowerBound.CompareTo(value.LowerBound) < 0 ? LowerBound : value.LowerBound;
-			return UpperBound.CompareTo(value.UpperBound) > 0 ? new Range<T>(start, UpperBound) : new Range<T>(start, value.UpperBound);
-		}
-
-		/// <summary>
-		/// Returns a range which contains the current range, minus <code>value</code>.
-		/// </summary>
-		/// <param name="value">The value to complement the range by.</param>
-		/// <returns>The complemented range.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
-		/// <exception cref="System.ArgumentException">
-		/// <code>value</code> is contained by this range, complementing would lead to a split range.
-		/// </exception>
-		public Range<T> Complement(Range<T> value)
-		{
-			Guard.IsNotNull(value, "value");
-			Guard.IsTrue(!Contains(value), "value");
-
-			if (Overlaps(value))
-			{
-				T start;
-
-				// If value's start and end straddle our start, move our start up to be values end.
-				if ((LowerBound.CompareTo(value.LowerBound) > 0) && (LowerBound.CompareTo(value.UpperBound) < 0))
-				{
-					start = value.UpperBound;
-				}
-				else
-				{
-					start = LowerBound;
-				}
-
-				// If value's start and end straddle our end, move our end back down to be values start.
-				if ((UpperBound.CompareTo(value.LowerBound) > 0) && (UpperBound.CompareTo(value.UpperBound) < 0))
-				{
-					return new Range<T>(start, value.LowerBound);
-				}
-				return new Range<T>(start, UpperBound);
-			}
-			return this;
-		}
-
-		/// <summary>
-		/// Splits the range into two.
-		/// </summary>
-		/// <param name="position">The position to split the range at.</param>
-		/// <returns>The split ranges.</returns>
-		/// <exception cref="System.ArgumentNullException"><code>position</code> is null.</exception>
-		/// <exception cref="System.ArgumentException"><code>position</code> is not contained within the range.</exception>
-		public IEnumerable<Range<T>> Split(T position)
-		{
-			Guard.IsNotNull(position, "position");
-			Guard.IsTrue(Contains(position), "position");
-
-			if ((LowerBound.CompareTo(position) == 0) || (UpperBound.CompareTo(position) == 0))
-			{
-				// The position is at a boundary, so a split does not happen
-				yield return this;
-			}
-			else
-			{
-				yield return Range.Create(LowerBound, position);
-				yield return Range.Create(position, UpperBound);
-			}
-		}
-		/// <summary>
-		/// Iterates the range.
-		/// </summary>
-		/// <param name="incrementor">A function which takes a value, and returns the next value.</param>
-		/// <returns>The items in the range.</returns>
-		public IEnumerable<T> Iterate(Func<T, T> incrementor)
-		{
-			yield return LowerBound;
-			T item = incrementor(LowerBound);
-			while (UpperBound.CompareTo(item) >= 0)
-			{
-				yield return item;
-				item = incrementor(item);
-			}
-		}
-
-		/// <summary>
-		/// Iterates the range in reverse.
-		/// </summary>
-		/// <param name="decrementor">A function which takes a value, and returns the previous value.</param>
-		/// <returns>The items in the range.</returns>
-		public IEnumerable<T> ReverseIterate(Func<T, T> decrementor)
-		{
-			yield return UpperBound;
-			T item = decrementor(UpperBound);
-			while (CompareTo(item) <= 0)
-			{
-				yield return item;
-				item = decrementor(item);
-			}
-		}
-
-		/// <summary>
-		/// Indicates if this range is contiguous with <code>range</code>.
-		/// </summary>
-		/// <param name="range">The range to check.</param>
-		/// <returns>true if the two ranges are contiguous, false otherwise.</returns>
-		/// <remarks>Contiguous can mean containing, overlapping, or being next to.</remarks>
-		public bool IsContiguousWith(Range<T> range)
-		{
-			if (Overlaps(range) || range.Overlaps(this) || range.Contains(this) || Contains(range))
-			{
-				return true;
-			}
-
-			// Once we remove overlapping and containing, only touching if available
-			return ((UpperBound.Equals(range.LowerBound)) || (LowerBound.Equals(range.UpperBound)));
-		}
-		#endregion
-
-		#region Overrides
-		/// <summary>
-		/// See <see cref="System.Object.ToString"/>.
-		/// </summary>
-		public override string ToString()
-		{
-			return "{" + LowerBound + "->" + UpperBound + "}";
-		}
-
-		/// <summary>
-		/// See <see cref="System.Object.Equals(object)"/>.
-		/// </summary>
-		public override bool Equals(object obj)
-		{
-			if (obj is Range<T>)
-			{
-				var other = (Range<T>)obj;
-				return ((CompareTo(other) == 0) && (UpperBound.CompareTo(other.UpperBound) == 0));
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// See <see cref="System.Object.GetHashCode"/>.
-		/// </summary>
-		public override int GetHashCode()
-		{
-			return LowerBound.GetHashCode();
-		}
 		#endregion
 
 		#region Operators
@@ -314,7 +66,7 @@
 				return false;
 			}
 
-			return (left.CompareTo(right) == 0);
+			return left.CompareTo(right) == 0;
 		}
 
 		/// <summary>
@@ -340,7 +92,7 @@
 		/// <returns>true if the <code>left</code> is greater than <code>right</code>, false otherwise.</returns>
 		public static bool operator >(Range<T> left, Range<T> right)
 		{
-			return (left.CompareTo(right) > 0);
+			return left.CompareTo(right) > 0;
 		}
 
 		/// <summary>
@@ -351,7 +103,7 @@
 		/// <returns>true if the <code>left</code> is less than <code>right</code>, false otherwise.</returns>
 		public static bool operator <(Range<T> left, Range<T> right)
 		{
-			return (left.CompareTo(right) < 0);
+			return left.CompareTo(right) < 0;
 		}
 
 		/// <summary>
@@ -362,7 +114,7 @@
 		/// <returns>true if the <code>left</code> is greater than <code>right</code>, false otherwise.</returns>
 		public static bool operator >(Range<T> left, T right)
 		{
-			return (left.CompareTo(right) > 0);
+			return left.CompareTo(right) > 0;
 		}
 
 		/// <summary>
@@ -373,7 +125,7 @@
 		/// <returns>true if the <code>left</code> is less than <code>right</code>, false otherwise.</returns>
 		public static bool operator <(Range<T> left, T right)
 		{
-			return (left.CompareTo(right) < 0);
+			return left.CompareTo(right) < 0;
 		}
 
 		/// <summary>
@@ -384,7 +136,7 @@
 		/// <returns>true if the <code>left</code> is greater than or equal to <code>right</code>, false otherwise.</returns>
 		public static bool operator >=(Range<T> left, Range<T> right)
 		{
-			return (left.CompareTo(right) >= 0);
+			return left.CompareTo(right) >= 0;
 		}
 
 		/// <summary>
@@ -395,7 +147,7 @@
 		/// <returns>true if the <code>left</code> is less than or equal to <code>right</code>, false otherwise.</returns>
 		public static bool operator <=(Range<T> left, Range<T> right)
 		{
-			return (left.CompareTo(right) <= 0);
+			return left.CompareTo(right) <= 0;
 		}
 
 		/// <summary>
@@ -406,7 +158,7 @@
 		/// <returns>true if the <code>left</code> is greater than or equal to <code>right</code>, false otherwise.</returns>
 		public static bool operator >=(Range<T> left, T right)
 		{
-			return (left.CompareTo(right) >= 0);
+			return left.CompareTo(right) >= 0;
 		}
 
 		/// <summary>
@@ -417,7 +169,7 @@
 		/// <returns>true if the <code>left</code> is less than or equal to <code>right</code>, false otherwise.</returns>
 		public static bool operator <=(Range<T> left, T right)
 		{
-			return (left.CompareTo(right) <= 0);
+			return left.CompareTo(right) <= 0;
 		}
 
 		/// <summary>
@@ -452,6 +204,249 @@
 		{
 			return left.Intersect(right);
 		}
+
+		#endregion
+
+		#region Methods
+		/// <summary>
+		/// Indicates if the range contains <code>value</code>.
+		/// </summary>
+		/// <param name="value">The value to look for.</param>
+		/// <returns>true if the range contains <code>value</code>, false otherwise.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		public bool Contains(T value)
+		{
+			Guard.IsNotNull(value, "value");
+
+			return (this.LowerBound.CompareTo(value) <= 0) && (this.UpperBound.CompareTo(value) >= 0);
+		}
+
+		/// <summary>
+		/// Indicates if the range contains <code>value</code>.
+		/// </summary>
+		/// <param name="value">A range to test.</param>
+		/// <returns>true if the entire range in <code>value</code> is within this range.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		public bool Contains(Range<T> value)
+		{
+			Guard.IsNotNull(value, "value");
+
+			return (this.LowerBound.CompareTo(value.LowerBound) <= 0) && (this.UpperBound.CompareTo(value.UpperBound) >= 0);
+		}
+
+		/// <summary>
+		/// Indicates if the range is contained by <code>value</code>.
+		/// </summary>
+		/// <param name="value">A range to test.</param>
+		/// <returns>true if the entire range is within <code>value</code>.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		public bool IsContainedBy(Range<T> value)
+		{
+			Guard.IsNotNull(value, "value");
+
+			return value.Contains(this);
+		}
+
+		/// <summary>
+		/// Indicates if the range overlaps <code>value</code>.
+		/// </summary>
+		/// <param name="value">A range to test.</param>
+		/// <returns>true if any of the range in <code>value</code> is within this range.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		public bool Overlaps(Range<T> value)
+		{
+			Guard.IsNotNull(value, "value");
+
+			return this.Contains(value.LowerBound) || this.Contains(value.UpperBound) || value.Contains(this.LowerBound) || value.Contains(this.UpperBound);
+		}
+
+		/// <summary>
+		/// Returns the range that represents the intersection of this range and <code>value</code>.
+		/// </summary>
+		/// <param name="value">The range to intersect with.</param>
+		/// <returns>A range that contains the values that are common in both ranges, or null if there is no intersection.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		/// <exception cref="System.ArgumentException"><code>value</code> does not overlap the range.</exception>
+		public Range<T> Intersect(Range<T> value)
+		{
+			Guard.IsNotNull(value, "value");
+			Guard.IsTrue(this.Overlaps(value), "value");    // Intersect makes no sense unless there is an overlap
+
+			var start = this.LowerBound.CompareTo(value.LowerBound) > 0 ? this.LowerBound : value.LowerBound;
+			return this.UpperBound.CompareTo(value.UpperBound) < 0 ? new Range<T>(start, this.UpperBound) : new Range<T>(start, value.UpperBound);
+		}
+
+		/// <summary>
+		/// Returns the range that represents the union of this range and <code>value</code>.
+		/// </summary>
+		/// <param name="value">The range to union with.</param>
+		/// <returns>A range that contains both ranges, or null if there is no union.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		/// <exception cref="System.ArgumentException"><code>value</code> is not contiguous with the range.</exception>
+		public Range<T> Union(Range<T> value)
+		{
+			Guard.IsNotNull(value, "value");
+			Guard.IsTrue(this.IsContiguousWith(value), "value");    // Union makes no sense unless there is a contiguous border
+
+			// If either one is a subset of the other, then is it the union
+			if (this.Contains(value))
+			{
+				return this;
+			}
+
+			if (value.Contains(this))
+			{
+				return value;
+			}
+
+			var start = this.LowerBound.CompareTo(value.LowerBound) < 0 ? this.LowerBound : value.LowerBound;
+			return this.UpperBound.CompareTo(value.UpperBound) > 0 ? new Range<T>(start, this.UpperBound) : new Range<T>(start, value.UpperBound);
+		}
+
+		/// <summary>
+		/// Returns a range which contains the current range, minus <code>value</code>.
+		/// </summary>
+		/// <param name="value">The value to complement the range by.</param>
+		/// <returns>The complemented range.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>value</code> is null.</exception>
+		/// <exception cref="System.ArgumentException">
+		/// <code>value</code> is contained by this range, complementing would lead to a split range.
+		/// </exception>
+		public Range<T> Complement(Range<T> value)
+		{
+			Guard.IsNotNull(value, "value");
+			Guard.IsTrue(!this.Contains(value), "value");
+
+			if (this.Overlaps(value))
+			{
+				T start;
+
+				// If value's start and end straddle our start, move our start up to be values end.
+				if ((this.LowerBound.CompareTo(value.LowerBound) > 0) && (this.LowerBound.CompareTo(value.UpperBound) < 0))
+				{
+					start = value.UpperBound;
+				}
+				else
+				{
+					start = this.LowerBound;
+				}
+
+				// If value's start and end straddle our end, move our end back down to be values start.
+				if ((this.UpperBound.CompareTo(value.LowerBound) > 0) && (this.UpperBound.CompareTo(value.UpperBound) < 0))
+				{
+					return new Range<T>(start, value.LowerBound);
+				}
+
+				return new Range<T>(start, this.UpperBound);
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Splits the range into two.
+		/// </summary>
+		/// <param name="position">The position to split the range at.</param>
+		/// <returns>The split ranges.</returns>
+		/// <exception cref="System.ArgumentNullException"><code>position</code> is null.</exception>
+		/// <exception cref="System.ArgumentException"><code>position</code> is not contained within the range.</exception>
+		public IEnumerable<Range<T>> Split(T position)
+		{
+			Guard.IsNotNull(position, "position");
+			Guard.IsTrue(this.Contains(position), "position");
+
+			if ((this.LowerBound.CompareTo(position) == 0) || (this.UpperBound.CompareTo(position) == 0))
+			{
+				// The position is at a boundary, so a split does not happen
+				yield return this;
+			}
+			else
+			{
+				yield return Range.Create(this.LowerBound, position);
+				yield return Range.Create(position, this.UpperBound);
+			}
+		}
+
+		/// <summary>
+		/// Iterates the range.
+		/// </summary>
+		/// <param name="incrementor">A function which takes a value, and returns the next value.</param>
+		/// <returns>The items in the range.</returns>
+		public IEnumerable<T> Iterate(Func<T, T> incrementor)
+		{
+			yield return this.LowerBound;
+			var item = incrementor(this.LowerBound);
+			while (this.UpperBound.CompareTo(item) >= 0)
+			{
+				yield return item;
+				item = incrementor(item);
+			}
+		}
+
+		/// <summary>
+		/// Iterates the range in reverse.
+		/// </summary>
+		/// <param name="decrementor">A function which takes a value, and returns the previous value.</param>
+		/// <returns>The items in the range.</returns>
+		public IEnumerable<T> ReverseIterate(Func<T, T> decrementor)
+		{
+			yield return this.UpperBound;
+			var item = decrementor(this.UpperBound);
+			while (this.CompareTo(item) <= 0)
+			{
+				yield return item;
+				item = decrementor(item);
+			}
+		}
+
+		/// <summary>
+		/// Indicates if this range is contiguous with <code>range</code>.
+		/// </summary>
+		/// <param name="range">The range to check.</param>
+		/// <returns>true if the two ranges are contiguous, false otherwise.</returns>
+		/// <remarks>Contiguous can mean containing, overlapping, or being next to.</remarks>
+		public bool IsContiguousWith(Range<T> range)
+		{
+			if (this.Overlaps(range) || range.Overlaps(this) || range.Contains(this) || this.Contains(range))
+			{
+				return true;
+			}
+
+			// Once we remove overlapping and containing, only touching if available
+			return this.UpperBound.Equals(range.LowerBound) || this.LowerBound.Equals(range.UpperBound);
+		}
+		#endregion
+
+		#region Overrides
+		/// <summary>
+		/// See <see cref="object.ToString"/>.
+		/// </summary>
+		public override string ToString()
+		{
+			return "{" + this.LowerBound + "->" + this.UpperBound + "}";
+		}
+
+		/// <summary>
+		/// See <see cref="object.Equals(object)"/>.
+		/// </summary>
+		public override bool Equals(object obj)
+		{
+			if (obj is Range<T>)
+			{
+				var other = (Range<T>)obj;
+				return (this.CompareTo(other) == 0) && (this.UpperBound.CompareTo(other.UpperBound) == 0);
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// See <see cref="object.GetHashCode"/>.
+		/// </summary>
+		public override int GetHashCode()
+		{
+			return this.LowerBound.GetHashCode();
+		}
 		#endregion
 
 		#region IComparable<Range<T>> Members
@@ -460,7 +455,7 @@
 		/// </summary>
 		public int CompareTo(Range<T> other)
 		{
-			return LowerBound.CompareTo(other.LowerBound);
+			return this.LowerBound.CompareTo(other.LowerBound);
 		}
 		#endregion
 
@@ -470,7 +465,7 @@
 		/// </summary>
 		public int CompareTo(T other)
 		{
-			return LowerBound.CompareTo(other);
+			return this.LowerBound.CompareTo(other);
 		}
 		#endregion
 
@@ -483,12 +478,13 @@
 			if (obj is Range<T>)
 			{
 				var other = (Range<T>)obj;
-				return CompareTo(other);
+				return this.CompareTo(other);
 			}
+
 			if (obj is T)
 			{
 				var other = (T)obj;
-				return CompareTo(other);
+				return this.CompareTo(other);
 			}
 
 			throw new InvalidOperationException(string.Format("Cannot compare to {0}", obj));
@@ -504,7 +500,7 @@
 	public sealed class Range<TKey, TValue> : Range<TKey> where TKey : IComparable<TKey>
 	{
 		#region Declarations
-		private readonly TValue _value;
+
 		#endregion
 
 		#region Constructors
@@ -517,7 +513,7 @@
 		internal Range(TKey lowerBound, TKey upperBound, TValue value)
 			: base(lowerBound, upperBound)
 		{
-			_value = value;
+			this.Value = value;
 		}
 		#endregion
 
@@ -525,50 +521,8 @@
 		/// <summary>
 		/// The value for the range.
 		/// </summary>
-		public TValue Value
-		{
-			get
-			{
-				return _value;
-			}
-		}
-		#endregion
-	}
+		public TValue Value { get; }
 
-	/// <summary>
-	/// Represents a range of array items, with an associated value.
-	/// </summary>
-	/// <typeparam name="T">The value type.</typeparam>
-	public sealed class RangeArray<T> : Range<int>
-	{
-		#region Declarations
-		private readonly T[] _values;
-		#endregion
-
-		#region Constructors
-		/// <summary>
-		/// Creates the range.
-		/// </summary>
-		/// <param name="startIndex">The start index.</param>
-		/// <param name="values">The values.</param>
-		internal RangeArray(int startIndex, T[] values)
-			: base(startIndex, startIndex + values.Length - 1)
-		{
-			_values = values;
-		}
-		#endregion
-
-		#region Properties
-		/// <summary>
-		/// The values for the range.
-		/// </summary>
-		public T[] Values
-		{
-			get
-			{
-				return _values;
-			}
-		}
 		#endregion
 	}
 
@@ -612,7 +566,7 @@
 		{
 			Guard.IsNotNull(range, "range");
 			Guard.IsNotNullOrEmpty(values, "values");
-			Guard.IsTrue((values.Length == (range.UpperBound - range.LowerBound)), "range");
+			Guard.IsTrue(values.Length == (range.UpperBound - range.LowerBound), "range");
 
 			return new RangeArray<T>(range.LowerBound, values);
 		}
@@ -664,7 +618,7 @@
 		{
 			Guard.IsNotNull(ranges, "ranges");
 
-			foreach (Range<TKey, TValue> item in ranges)
+			foreach (var item in ranges)
 			{
 				yield return (Range<TKey>)item;
 			}
@@ -680,7 +634,7 @@
 		{
 			Guard.IsNotNull(ranges, "ranges");
 
-			foreach (RangeArray<T> item in ranges)
+			foreach (var item in ranges)
 			{
 				yield return (Range<int>)item;
 			}

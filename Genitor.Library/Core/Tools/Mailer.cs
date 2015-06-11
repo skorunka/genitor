@@ -48,7 +48,7 @@
 		public static IEnumerable<MailAddress> GetMailAddressCollection(string addresses)
 		{
 			var ret = new MailAddressCollection();
-			addresses.Split(new[] { ';' }).Where(a => !String.IsNullOrWhiteSpace(a)).ToList().ForEach(ret.Add);
+			addresses.Split(';').Where(a => !string.IsNullOrWhiteSpace(a)).ToList().ForEach(ret.Add);
 			return ret;
 		}
 
@@ -70,12 +70,12 @@
 
 			mailMessage.To.AddRange(GetMailAddressCollection(to));
 
-			if (!String.IsNullOrWhiteSpace(cc))
+			if (!string.IsNullOrWhiteSpace(cc))
 			{
 				mailMessage.CC.AddRange(GetMailAddressCollection(cc));
 			}
 
-			if (!String.IsNullOrWhiteSpace(bcc))
+			if (!string.IsNullOrWhiteSpace(bcc))
 			{
 				mailMessage.Bcc.AddRange(GetMailAddressCollection(bcc));
 			}
@@ -91,19 +91,19 @@
 		public void Send(MailMessage mailMessage)
 		{
 			Guard.IsNotNull(mailMessage, "mailMessage");
-			if (this._templateControl == null && String.IsNullOrWhiteSpace(mailMessage.Body))
+			if (this._templateControl == null && string.IsNullOrWhiteSpace(mailMessage.Body))
 			{
 				throw new ArgumentException("Either mail body or Template must be set.");
 			}
 
 			using (mailMessage)
 			{
-				// checks if a template control is set
+				//// checks if a template control is set
 				if (this._templateControl != null)
 				{
 					// gets the control's Type
 					var templateType = this._templateControl.GetType();
-					// sets properties from the dictionary using reflection
+					//// sets properties from the dictionary using reflection
 					if (this.MailTemplateParameters != null)
 					{
 						foreach (var parameter in this.MailTemplateParameters)
@@ -116,7 +116,7 @@
 						}
 					}
 
-					// renders the template control as a string
+					//// renders the template control as a string
 					var stringBuilder = new StringBuilder();
 					using (var textWriter = new StringWriter(stringBuilder))
 					{
@@ -253,10 +253,12 @@
 							var memoryStream = new MemoryStream(buf);
 							linkedResource = new LinkedResource(memoryStream);
 						}
+
 						// ReSharper disable EmptyGeneralCatchClause
 						catch
 						{
 						}
+
 						// ReSharper restore EmptyGeneralCatchClause
 					}
 				}
@@ -274,7 +276,7 @@
 					this._linkedResources.Add(linkedResource);
 
 					// update the img's src attribute with the linked resource's unique id
-					return string.Format("src='cid:{0}'", linkedResource.ContentId);
+					return $"src='cid:{linkedResource.ContentId}'";
 				}
 
 				// leave src unchanged if we can't get the image

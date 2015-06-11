@@ -1,6 +1,5 @@
-﻿// ReSharper disable CheckNamespace
+﻿//// ReSharper disable CheckNamespace
 namespace Genitor.Library.Core
-// ReSharper restore CheckNamespace
 {
 	using System;
 	using System.Collections.Generic;
@@ -196,7 +195,7 @@ namespace Genitor.Library.Core
 
 		public static string[] Split(this string source, char ch)
 		{
-			return source.Split(new[] { ch });
+			return source.Split(ch);
 		}
 
 		public static string[] Split(this string source, string s)
@@ -347,9 +346,9 @@ namespace Genitor.Library.Core
 
 			#region Properties
 
-			private string Expression { get; set; }
+			private string Expression { get; }
 
-			private string Format { get; set; }
+			private string Format { get; }
 
 			#endregion
 
@@ -392,7 +391,7 @@ namespace Genitor.Library.Core
 
 			#region Properties
 
-			private string LiteralText { get; set; }
+			private string LiteralText { get; }
 
 			#endregion
 

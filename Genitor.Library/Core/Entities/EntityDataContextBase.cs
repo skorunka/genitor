@@ -46,18 +46,9 @@ namespace Genitor.Library.Core.Entities
 			var hasOutputParameters = false;
 			if (parameters != null)
 			{
-				foreach (var p in parameters)
+				foreach (var outputP in parameters.OfType<DbParameter>().Where(outputP => outputP.Direction == ParameterDirection.InputOutput || outputP.Direction == ParameterDirection.Output))
 				{
-					var outputP = p as DbParameter;
-					if (outputP == null)
-					{
-						continue;
-					}
-
-					if (outputP.Direction == ParameterDirection.InputOutput || outputP.Direction == ParameterDirection.Output)
-					{
-						hasOutputParameters = true;
-					}
+					hasOutputParameters = true;
 				}
 			}
 

@@ -57,7 +57,7 @@
 		{
 			get
 			{
-				return LocalizationHelper.sDefaultLanguageCode;
+				return LocalizationHelper.DefaultLanguageCode;
 			}
 		}
 
@@ -88,7 +88,7 @@
 			where TEntity : LocalizedEntityBase, new()
 		{
 			IList<TEntity> entities = new List<TEntity> { entity };
-			return Localize(entities, languageCode ?? entity.LanguageCode, deep).First();
+			return this.Localize(entities, languageCode ?? entity.LanguageCode, deep).First();
 		}
 
 		public IList<TEntity> Localize<TEntity>(IList<TEntity> entities, string languageCode = null, bool deep = false)

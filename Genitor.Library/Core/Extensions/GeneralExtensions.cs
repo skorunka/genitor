@@ -1,6 +1,5 @@
-﻿// ReSharper disable CheckNamespace
+﻿//// ReSharper disable CheckNamespace
 namespace Genitor.Library.Core
-// ReSharper restore CheckNamespace
 {
 	using System;
 	using System.Collections.Generic;
@@ -26,11 +25,11 @@ namespace Genitor.Library.Core
 		{
 			if (!typeof(T).IsSerializable)
 			{
-				throw new ArgumentException(@"The type must be serializable.", "source");
+				throw new ArgumentException(@"The type must be serializable.", nameof(source));
 			}
 
 			// Don't serialize a null object, simply return the default for that object
-			if (object.ReferenceEquals(source, null))
+			if (ReferenceEquals(source, null))
 			{
 				return default(T);
 			}

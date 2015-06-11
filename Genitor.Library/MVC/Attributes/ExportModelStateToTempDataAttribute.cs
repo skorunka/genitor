@@ -36,7 +36,7 @@ namespace Genitor.Library.MVC.Attributes
 				// Export if we are redirecting
 				if ((filterContext.Result is RedirectResult) || (filterContext.Result is RedirectToRouteResult))
 				{
-					filterContext.Controller.TempData[ModelStateTempDataTransferAttribute.Key] = filterContext.Controller.ViewData.ModelState;
+					filterContext.Controller.TempData[Key] = filterContext.Controller.ViewData.ModelState;
 				}
 			}
 

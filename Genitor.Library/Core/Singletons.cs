@@ -1,11 +1,12 @@
-﻿namespace Genitor.Library.Core
+﻿#pragma warning disable SA1402 // File may only contain a single class
+namespace Genitor.Library.Core
 {
 	using System;
 	using System.Collections.Generic;
 
 	/// <summary>
-	/// A statically compiled "singleton" used to store objects throughout the 
-	/// lifetime of the app domain. Not so much singleton in the pattern's 
+	/// A statically compiled "singleton" used to store objects throughout the
+	/// lifetime of the app domain. Not so much singleton in the pattern's
 	/// sense of the word as a standardized way to store single instances.
 	/// </summary>
 	/// <typeparam name="T">The type of object to store.</typeparam>
@@ -25,7 +26,7 @@
 			set
 			{
 				instance = value;
-				Singleton.AllSingletons[typeof(T)] = value;
+				AllSingletons[typeof(T)] = value;
 			}
 		}
 	}
@@ -78,7 +79,7 @@
 	/// </summary>
 	public class Singleton
 	{
-		static readonly IDictionary<Type, object> _allSingletons;
+		private static readonly IDictionary<Type, object> _allSingletons;
 
 		static Singleton()
 		{

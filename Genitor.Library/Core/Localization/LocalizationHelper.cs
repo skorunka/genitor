@@ -14,7 +14,8 @@ namespace Genitor.Library.Core.Localization
 
 	public static class LocalizationHelper
 	{
-		private static readonly ConcurrentDictionary<string/*Type.FullName*/, LocalizedEntityMetadata> _sCache;
+		//// <Type.FullName, LocalizedEntityMetadata>
+		private static readonly ConcurrentDictionary<string, LocalizedEntityMetadata> Cache;
 
 		/// <summary>
 		/// Critical: must be valid CultureInfo code.
@@ -26,33 +27,33 @@ namespace Genitor.Library.Core.Localization
 
 		static LocalizationHelper()
 		{
-			sDefaultLanguageCode = (System.Configuration.ConfigurationManager.AppSettings[ConfigDefaultLanguageCodeKeyConst] ?? DefaultLanguageCodeConst).ToLower();
+			DefaultLanguageCode = (System.Configuration.ConfigurationManager.AppSettings[ConfigDefaultLanguageCodeKeyConst] ?? DefaultLanguageCodeConst).ToLower();
 
 			try
 			{
-				sDefaultCultureInfo = CultureInfo.GetCultureInfo(sDefaultLanguageCode);
+				DefaultCultureInfo = CultureInfo.GetCultureInfo(DefaultLanguageCode);
 			}
 			catch (Exception e)
 			{
 				Trace.TraceError(e.ToString());
 
-				sDefaultCultureInfo = CultureInfo.DefaultThreadCurrentUICulture;
-				sDefaultLanguageCode = sDefaultCultureInfo.Name.ToLower();
+				DefaultCultureInfo = CultureInfo.DefaultThreadCurrentUICulture;
+				DefaultLanguageCode = DefaultCultureInfo.Name.ToLower();
 			}
 
-			sEnabledCultureInfos = new List<CultureInfo> { sDefaultCultureInfo };
+			EnabledCultureInfos = new List<CultureInfo> { DefaultCultureInfo };
 
 			var enabledLanguagesCsv = System.Configuration.ConfigurationManager.AppSettings[ConfigEnabledLanguagesKeyConst];
 			if (!string.IsNullOrWhiteSpace(enabledLanguagesCsv))
 			{
-				foreach (var enabledLanguageCode in enabledLanguagesCsv.Split(new[] { ',' }).Where(x => !string.IsNullOrEmpty(x)).Select(x => x.Trim().ToLower()))
+				foreach (var enabledLanguageCode in enabledLanguagesCsv.Split(',').Where(x => !string.IsNullOrEmpty(x)).Select(x => x.Trim().ToLower()))
 				{
 					try
 					{
 						var cultureInfo = CultureInfo.GetCultureInfo(enabledLanguageCode);
-						if (!sEnabledCultureInfos.Contains(cultureInfo))
+						if (!EnabledCultureInfos.Contains(cultureInfo))
 						{
-							sEnabledCultureInfos.Add(cultureInfo);
+							EnabledCultureInfos.Add(cultureInfo);
 						}
 					}
 					catch (Exception e)
@@ -62,21 +63,21 @@ namespace Genitor.Library.Core.Localization
 				}
 			}
 
-			_sCache = new ConcurrentDictionary<string, LocalizedEntityMetadata>();
+			Cache = new ConcurrentDictionary<string, LocalizedEntityMetadata>();
 			ScanAssembly(Assembly.GetExecutingAssembly());
 		}
 
-		public static string sDefaultLanguageCode { get; private set; }
+		public static string DefaultLanguageCode { get; }
 
-		public static CultureInfo sDefaultCultureInfo { get; private set; }
+		public static CultureInfo DefaultCultureInfo { get; }
 
-		public static IList<CultureInfo> sEnabledCultureInfos { get; private set; }
+		public static IList<CultureInfo> EnabledCultureInfos { get; }
 
 		public static string GetCultureCountryCode(CultureInfo cultureInfo)
 		{
 			Guard.IsNotNull(cultureInfo, "cultureInfo");
 
-			return cultureInfo.TextInfo.CultureName.Split(new[] { '-' }).Last().ToLower();
+			return cultureInfo.TextInfo.CultureName.Split('-').Last().ToLower();
 		}
 
 		public static void ScanAssembly(Assembly assembly)
@@ -87,11 +88,11 @@ namespace Genitor.Library.Core.Localization
 				.ToDictionary(GetEntityKey, t => new LocalizedEntityMetadata(t))
 				.Where(x => x.Value.Properties.Count > 0);
 
-			lock (_sCache)
+			lock (Cache)
 			{
 				foreach (var metadata in metadatas)
 				{
-					_sCache.TryAdd(metadata.Key, metadata.Value);
+					Cache.TryAdd(metadata.Key, metadata.Value);
 				}
 			}
 		}
@@ -108,7 +109,7 @@ namespace Genitor.Library.Core.Localization
 
 		public static LocalizedEntityMetadata GetLocalizedEntityMetadata(string entityName)
 		{
-			return string.IsNullOrEmpty(entityName) || !_sCache.ContainsKey(entityName) ? null : _sCache[entityName];
+			return string.IsNullOrEmpty(entityName) || !Cache.ContainsKey(entityName) ? null : Cache[entityName];
 		}
 
 		public static Type GetEntityType(object entity)
@@ -138,7 +139,7 @@ namespace Genitor.Library.Core.Localization
 
 			public Type EntityType { get; private set; }
 
-			public ICollection<Pair<string, PropertyInfo>> Properties { get; private set; }
+			public ICollection<Pair<string, PropertyInfo>> Properties { get; }
 
 			private static ICollection<Pair<string, PropertyInfo>> GetLocalizableProperties(Type type)
 			{

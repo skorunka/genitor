@@ -18,40 +18,15 @@
 		public Pair(TFirst first, TSecond second)
 			: this()
 		{
-			First = first;
-			Second = second;
+			this.First = first;
+			this.Second = second;
 		}
 
 		#endregion
 
-		public TFirst First { get; private set; }
+		public TFirst First { get; }
 
-		public TSecond Second { get; private set; }
-
-		public override bool Equals(object obj)
-		{
-			if (!(obj is Pair<TFirst, TSecond>))
-				return false;
-
-			if (Equals(obj, this))
-				return true;
-
-			var pair2 = (Pair<TFirst, TSecond>)obj;
-
-			return
-				((First == null && pair2.First == null) || (First != null && First.Equals(pair2.First))) &&
-				((Second == null && pair2.Second == null) || (Second != null && Second.Equals(pair2.Second)));
-		}
-
-		public override int GetHashCode()
-		{
-			return (First == null ? 0 : First.GetHashCode()) ^ (Second == null ? 0 : Second.GetHashCode());
-		}
-
-		public override string ToString()
-		{
-			return String.Format("[{0}, {1}]", First, Second);
-		}
+		public TSecond Second { get; }
 
 		public static bool operator ==(Pair<TFirst, TSecond> p1, Pair<TFirst, TSecond> p2)
 		{
@@ -61,6 +36,35 @@
 		public static bool operator !=(Pair<TFirst, TSecond> p1, Pair<TFirst, TSecond> p2)
 		{
 			return !p1.Equals(p2);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is Pair<TFirst, TSecond>))
+			{
+				return false;
+			}
+
+			if (Equals(obj, this))
+			{
+				return true;
+			}
+
+			var pair2 = (Pair<TFirst, TSecond>)obj;
+
+			return
+				((this.First == null && pair2.First == null) || (this.First != null && this.First.Equals(pair2.First))) &&
+				((this.Second == null && pair2.Second == null) || (this.Second != null && this.Second.Equals(pair2.Second)));
+		}
+
+		public override int GetHashCode()
+		{
+			return (this.First?.GetHashCode() ?? 0) ^ (this.Second == null ? 0 : this.Second.GetHashCode());
+		}
+
+		public override string ToString()
+		{
+			return string.Format("[{0}, {1}]", this.First, this.Second);
 		}
 	}
 }

@@ -35,10 +35,7 @@
 			{
 				filterContext.Result = AjaxRequestJsonResult.Error(
 					"Not signed in.",
-					new
-						{
-							SignInUrl = GetAuthenticationUrl(filterContext.HttpContext.Request.Url, filterContext.HttpContext.Request.ApplicationPath)
-						});
+					new { SignInUrl = GetAuthenticationUrl(filterContext.HttpContext.Request.Url, filterContext.HttpContext.Request.ApplicationPath) });
 			}
 		}
 	}

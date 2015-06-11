@@ -10,6 +10,6 @@ namespace Genitor.Library.MVC.Attributes
 		/// <summary>
 		/// The key.
 		/// </summary>
-		protected static readonly string Key = typeof(ModelStateTempDataTransferAttribute).FullName;
+		protected static string Key => typeof(ModelStateTempDataTransferAttribute).FullName;
 	}
 }

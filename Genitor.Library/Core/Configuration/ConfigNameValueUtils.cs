@@ -1,21 +1,18 @@
-using System;
-using System.Collections.Specialized;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Reflection;
-using Genitor.Library.Core.Tools;
-
 namespace Genitor.Library.Core.Configuration
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Collections.Specialized;
+	using System.Configuration;
+	using System.Reflection;
+
+	using Genitor.Library.Core.Tools;
+
 	public static class ConfigNameValueUtils
 	{
-		#region Delegates
-		public delegate T GetValueHandler<out T>(string value);
-		#endregion
+		private static readonly Dictionary<string, WeakReference> SectionCache = new Dictionary<string, WeakReference>();
 
-		#region Fields
-		private static readonly Dictionary<string, WeakReference> _sSectionCache = new Dictionary<string, WeakReference>();
-		#endregion
+		public delegate T GetValueHandler<out T>(string value);
 
 		#region AutFillFields methods
 		/// <summary>
@@ -24,7 +21,10 @@ namespace Genitor.Library.Core.Configuration
 		public static void AutoFillFields(object instance)
 		{
 			if (instance == null)
-				throw new ArgumentNullException("instance");
+			{
+				throw new ArgumentNullException(nameof(instance));
+			}
+
 			AutoFillFields(instance.GetType(), instance);
 		}
 
@@ -34,7 +34,10 @@ namespace Genitor.Library.Core.Configuration
 		public static void AutoFillFields(Type type)
 		{
 			if (type == null)
-				throw new ArgumentNullException("type");
+			{
+				throw new ArgumentNullException(nameof(type));
+			}
+
 			AutoFillFields(type, null);
 		}
 
@@ -43,33 +46,41 @@ namespace Genitor.Library.Core.Configuration
 		/// </summary>
 		private static void AutoFillFields(Type type, object instance)
 		{
-			// pokusi se zjistit jestli existuje definice pro default section
+			//// pokusi se zjistit jestli existuje definice pro default section
 			string defaultSection = null;
 			var attrs = type.GetCustomAttributes(typeof(ConfigDefaultsAttribute), false);
 			if (attrs.Length > 0)
+			{
 				defaultSection = ((ConfigDefaultsAttribute)attrs[0]).Section;
+			}
 
-			//nakde vsechny fieldy pro typ a pripadni i instanci
+			//// nakde vsechny fieldy pro typ a pripadni i instanci
 			var flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 			if (instance != null)
+			{
 				flags |= BindingFlags.Instance;
+			}
 
 			var fields = type.GetFields(flags);
 
-			// fieldy proiteruje a pro kazdy zjisti handler metodu a zavola ji
+			//// fieldy proiteruje a pro kazdy zjisti handler metodu a zavola ji
 			foreach (var fi in fields)
 			{
 				var autoFill = GetAutoFillAttribute(fi);
 				if (autoFill == null)
+				{
 					continue;
+				}
 
-				if (defaultSection == null && String.IsNullOrEmpty(autoFill.Section))
-					throw new ConfigurationErrorsException(String.Format("ConfigAutoFillAttribute definition for '{0}.{1}' must declare 'Section' property when the class '{0}' is not decored by ConfigDefaultsAttribute", type.FullName, fi.Name));
+				if (defaultSection == null && string.IsNullOrEmpty(autoFill.Section))
+				{
+					throw new ConfigurationErrorsException(string.Format("ConfigAutoFillAttribute definition for '{0}.{1}' must declare 'Section' property when the class '{0}' is not decored by ConfigDefaultsAttribute", type.FullName, fi.Name));
+				}
 
-				//if (!autoFill.IsRequired && autoFill.DefaultValue == null)
-				//    throw new ConfigurationErrorsException(String.Format("ConfigAutoFillAttribute definition for '{0}.{1}' must declare 'DefaultValue' property when the 'IsRequired' property is false", type.FullName, fi.Name));
+				//// if (!autoFill.IsRequired && autoFill.DefaultValue == null)
+				////    throw new ConfigurationErrorsException(String.Format("ConfigAutoFillAttribute definition for '{0}.{1}' must declare 'DefaultValue' property when the 'IsRequired' property is false", type.FullName, fi.Name));
 
-				MethodInfo miHandler = GetHandler(autoFill, type, fi);
+				var miHandler = GetHandler(autoFill, type, fi);
 
 				object value;
 
@@ -92,22 +103,33 @@ namespace Genitor.Library.Core.Configuration
 		public static T GetValue<T>(string section, string key, bool isRequired, T defaultValue, GetValueHandler<T> handler)
 		{
 			if (section == null)
-				throw new ArgumentNullException("section");
+			{
+				throw new ArgumentNullException(nameof(section));
+			}
 
 			if (key == null)
-				throw new ArgumentNullException("key");
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
 
 			if (handler == null)
-				throw new ArgumentNullException("handler");
+			{
+				throw new ArgumentNullException(nameof(handler));
+			}
 
 			if (!isRequired && defaultValue == null)
+			{
 				throw new ArgumentException("Parameter 'defaultValue' can not be null when parameter 'isRequired' == false");
+			}
 
-			string strValue = RetrieveString(section, key);
+			var strValue = RetrieveString(section, key);
 			if (strValue == null)
 			{
 				if (isRequired)
+				{
 					throw new ConfigMissingKeyException(section, key);
+				}
+
 				return defaultValue;
 			}
 
@@ -147,9 +169,15 @@ namespace Genitor.Library.Core.Configuration
 			if (strValue == null)
 			{
 				if (isRequired)
+				{
 					throw new ConfigMissingKeyException(section, key);
+				}
+
 				if (defaultValue == null)
+				{
 					return false;
+				}
+
 				strValue = defaultValue;
 			}
 
@@ -163,7 +191,10 @@ namespace Genitor.Library.Core.Configuration
 			catch (Exception exc)
 			{
 				if (exc is TargetInvocationException && exc.InnerException is ConfigInvalidValueException)
+				{
 					throw new ConfigInvalidValueException(section, key, (exc.InnerException as ConfigInvalidValueException).Type);
+				}
+
 				throw;
 			}
 		}
@@ -174,17 +205,22 @@ namespace Genitor.Library.Core.Configuration
 		private static string RetrieveString(string section, string key)
 		{
 			WeakReference weakRef;
-			if (_sSectionCache.TryGetValue(section, out weakRef))
+			if (SectionCache.TryGetValue(section, out weakRef))
 			{
 				var obj = weakRef.Target;
 				if (obj != null)
+				{
 					return ((NameValueCollection)obj)[key];
+				}
 			}
 
 			var col = ConfigurationManager.GetSection(section) as NameValueCollection;
 			if (col == null)
-				throw new ConfigurationErrorsException(String.Format("Configuration section '{0}' was not found. It is required for key '{1}'.", section, key));
-			_sSectionCache[section] = new WeakReference(col);
+			{
+				throw new ConfigurationErrorsException(string.Format("Configuration section '{0}' was not found. It is required for key '{1}'.", section, key));
+			}
+
+			SectionCache[section] = new WeakReference(col);
 			return col[key];
 		}
 
@@ -194,34 +230,45 @@ namespace Genitor.Library.Core.Configuration
 		private static MethodInfo GetHandler(ConfigAutoFillAttribute autoFill, Type type, FieldInfo fi)
 		{
 			// AutoFill ma handler
-			if (!String.IsNullOrEmpty(autoFill.Handler))
+			if (!string.IsNullOrEmpty(autoFill.Handler))
 			{
 				var handlerMethod = autoFill.HandlerMethod;
 				Type handlerType;
 
-				if (String.IsNullOrEmpty(autoFill.HandlerTypeName) || autoFill.HandlerTypeName == "*config")
+				if (string.IsNullOrEmpty(autoFill.HandlerTypeName) || autoFill.HandlerTypeName == "*config")
+				{
 					handlerType = typeof(ConfigHandlers);
+				}
 				else if (autoFill.HandlerTypeName == "*self")
+				{
 					handlerType = type;
+				}
 				else
 				{
 					handlerType = TypeUtils.FindType(autoFill.HandlerTypeName);
 					if (handlerType == null)
-						throw new ConfigurationErrorsException(String.Format("ConfigAutoFillAttribute definition for '{0}.{1}' specifies 'HandlerType' '{2}' which was not found", type.FullName, fi.Name, autoFill.HandlerTypeName));
+					{
+						throw new ConfigurationErrorsException(string.Format("ConfigAutoFillAttribute definition for '{0}.{1}' specifies 'HandlerType' '{2}' which was not found", type.FullName, fi.Name, autoFill.HandlerTypeName));
+					}
 				}
 
 				var mi = handlerType.GetMethod(handlerMethod, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 				if (mi == null)
-					throw new ConfigurationErrorsException(String.Format("ConfigAutoFillAttribute definition for '{0}.{1}' declares handler '{2}' of type '{3}' which was not found", type.FullName, fi.Name, handlerMethod, handlerType.FullName));
+				{
+					throw new ConfigurationErrorsException(string.Format("ConfigAutoFillAttribute definition for '{0}.{1}' declares handler '{2}' of type '{3}' which was not found", type.FullName, fi.Name, handlerMethod, handlerType.FullName));
+				}
 
 				return mi;
 			}
-			else // handler vydedukujeme
+			else
+			//// handler vydedukujeme
 			{
 				var handlerMethod = ConfigHandlers.GetHandlerName(fi.FieldType);
 
 				if (handlerMethod == null)
-					throw new ConfigurationErrorsException(String.Format("ConfigAutoFillAttribute definition for '{0}.{1}' must declare 'Handler' property because field type '{2}' is not recognized", type.FullName, fi.Name, fi.FieldType.FullName));
+				{
+					throw new ConfigurationErrorsException(string.Format("ConfigAutoFillAttribute definition for '{0}.{1}' must declare 'Handler' property because field type '{2}' is not recognized", type.FullName, fi.Name, fi.FieldType.FullName));
+				}
 
 				var mi = typeof(ConfigHandlers).GetMethod(handlerMethod, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
@@ -233,12 +280,14 @@ namespace Genitor.Library.Core.Configuration
 		{
 			var attrs = fi.GetCustomAttributes(typeof(ConfigAutoFillAttribute), false);
 			if (attrs.Length > 0)
+			{
 				return (ConfigAutoFillAttribute)attrs[0];
+			}
+
 			return null;
 		}
 
-		// MEGA BETA VERZE - NENI OTESTOVANO!!!!
-
+		//// MEGA BETA VERZE - NENI OTESTOVANO!!!!
 
 		#endregion
 	}

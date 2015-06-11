@@ -8,48 +8,48 @@
 
 	public class GenericListTypeConverter<T> : TypeConverter
 	{
-		protected readonly TypeConverter _typeConverter;
+		private readonly TypeConverter _typeConverter;
 
 		public GenericListTypeConverter()
 		{
-			_typeConverter = TypeDescriptor.GetConverter(typeof(T));
-			if (_typeConverter == null)
+			this._typeConverter = TypeDescriptor.GetConverter(typeof(T));
+			if (this._typeConverter == null)
+			{
 				throw new InvalidOperationException("No type converter exists for type " + typeof(T).FullName);
+			}
 		}
 
 		protected virtual string[] GetStringArray(string input)
 		{
-			if (!String.IsNullOrEmpty(input))
+			if (!string.IsNullOrEmpty(input))
 			{
-				string[] result = input.Split(',');
-				Array.ForEach(result, s => s.Trim());
-				return result;
+				return input.Split(',').Select(x => x.Trim()).ToArray();
 			}
 			else
+			{
 				return new string[0];
+			}
 		}
 
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
-
-			if (sourceType == typeof(string))
+			if (sourceType != typeof(string))
 			{
-				string[] items = GetStringArray(sourceType.ToString());
-				return (items.Count() > 0);
+				return base.CanConvertFrom(context, sourceType);
 			}
 
-			return base.CanConvertFrom(context, sourceType);
+			return this.GetStringArray(sourceType.ToString()).Any();
 		}
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			if (value is string)
 			{
-				string[] items = GetStringArray((string)value);
+				var items = this.GetStringArray((string)value);
 				var result = new List<T>();
 				Array.ForEach(items, s =>
 				{
-					object item = _typeConverter.ConvertFromInvariantString(s);
+					var item = this._typeConverter.ConvertFromInvariantString(s);
 					if (item != null)
 					{
 						result.Add((T)item);
@@ -58,6 +58,7 @@
 
 				return result;
 			}
+
 			return base.ConvertFrom(context, culture, value);
 		}
 
@@ -65,19 +66,24 @@
 		{
 			if (destinationType == typeof(string))
 			{
-				string result = string.Empty;
-				if (((IList<T>)value) != null)
+				var result = string.Empty;
+				if ((value as IList<T>) == null)
 				{
-					//we don't use string.Join() because it doesn't support invariant culture
-					for (int i = 0; i < ((IList<T>)value).Count; i++)
+					return result;
+				}
+
+				//// we don't use string.Join() because it doesn't support invariant culture
+				for (var i = 0; i < ((IList<T>)value).Count; i++)
+				{
+					var str1 = Convert.ToString(((IList<T>)value)[i], CultureInfo.InvariantCulture);
+					result += str1;
+					//// don't add comma after the last element
+					if (i != ((IList<T>)value).Count - 1)
 					{
-						var str1 = Convert.ToString(((IList<T>)value)[i], CultureInfo.InvariantCulture);
-						result += str1;
-						//don't add comma after the last element
-						if (i != ((IList<T>)value).Count - 1)
-							result += ",";
+						result += ",";
 					}
 				}
+
 				return result;
 			}
 

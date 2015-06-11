@@ -1,15 +1,14 @@
-using System;
-using System.Configuration;
-using System.Runtime.Serialization;
-
-
 namespace Genitor.Library.Core.Configuration
 {
+	using System;
+	using System.Configuration;
+	using System.Runtime.Serialization;
+
 	[Serializable]
 	public class ConfigMissingKeyException : ConfigurationErrorsException
 	{
 		public ConfigMissingKeyException(string section, string key)
-			: base(String.Format("Configuration section '<{0}>' is missing required key '{1}'", section, key))
+			: base($"Configuration section '<{section}>' is missing required key '{key}'")
 		{
 		}
 

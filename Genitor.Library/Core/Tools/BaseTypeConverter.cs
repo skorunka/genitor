@@ -30,29 +30,48 @@
 			{
 				var sourceType = value.GetType();
 
-				TypeConverter destinationConverter = GetCustomTypeConverter(destinationType);
-				TypeConverter sourceConverter = GetCustomTypeConverter(sourceType);
+				var destinationConverter = GetCustomTypeConverter(destinationType);
+				var sourceConverter = GetCustomTypeConverter(sourceType);
 				if (destinationConverter != null && destinationConverter.CanConvertFrom(value.GetType()))
+				{
 					return destinationConverter.ConvertFrom(null, culture, value);
+				}
+
 				if (sourceConverter != null && sourceConverter.CanConvertTo(destinationType))
+				{
 					return sourceConverter.ConvertTo(null, culture, value, destinationType);
+				}
+
 				if (destinationType.IsEnum && value is int)
+				{
 					return Enum.ToObject(destinationType, (int)value);
+				}
+
 				if (!destinationType.IsAssignableFrom(value.GetType()))
+				{
 					return Convert.ChangeType(value, destinationType, culture);
+				}
 			}
+
 			return value;
 		}
 
 		private static TypeConverter GetCustomTypeConverter(Type destinationType)
 		{
-
 			if (destinationType == typeof(List<int>))
+			{
 				return new GenericListTypeConverter<int>();
+			}
+
 			if (destinationType == typeof(List<decimal>))
+			{
 				return new GenericListTypeConverter<decimal>();
+			}
+
 			if (destinationType == typeof(List<string>))
+			{
 				return new GenericListTypeConverter<string>();
+			}
 
 			return TypeDescriptor.GetConverter(destinationType);
 		}
@@ -65,9 +84,8 @@
 		/// <returns>The converted value.</returns>
 		public static T To<T>(this object value)
 		{
-			//return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
+			//// return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
 			return (T)To(value, typeof(T));
 		}
-
 	}
 }

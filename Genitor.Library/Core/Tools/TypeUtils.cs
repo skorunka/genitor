@@ -1,4 +1,5 @@
-﻿namespace Genitor.Library.Core.Tools
+﻿#pragma warning disable SA1201 // Elements must appear in the correct order
+namespace Genitor.Library.Core.Tools
 {
 	using System;
 	using System.Collections.Generic;
@@ -8,15 +9,13 @@
 
 	/// <summary>
 	/// Howto:
-	/// Obecne slouzi k ulehceni specifikace type. V konfiguraci lze definovat tzn. wellknown typ, 
+	/// Obecne slouzi k ulehceni specifikace type. V konfiguraci lze definovat tzn. wellknown typ,
 	/// nebo wellknown namespace+assembly. Pri odkazovani na takove typy pak neni treba uvadet plne jmeno
 	/// (namespace.typ, assembly), ale staci budto $Typ nebo Typ,$Assembly
-	/// 
-	/// TypeFinder lze pouzit pro nasledujici pripady:
-	/// 1) nalezeni typu s pripadnou preferenci NS pripedne assembly (pokud neni u typu uvedeno)
-	/// 2) nalezeni wellknown typu
-	/// 3) nalezeni typu z wellknown [namespace, assembly]
-	/// 
+	///		TypeFinder lze pouzit pro nasledujici pripady:
+	///		1) nalezeni typu s pripadnou preferenci NS pripedne assembly (pokud neni u typu uvedeno)
+	///		2) nalezeni wellknown typu
+	///		3) nalezeni typu z wellknown [namespace, assembly]
 	/// Obecne se proste zavola nektere z pretizeni TypeFinder.FindType(...).
 	/// Pokud typ neni nalezen, knihovna se pokusi najit tento typ v preferredNS a preferredAssembly.
 	/// Pokud je typ ve tvaru "$Typ", hleda se podle konfigurace Genitor.Library.reflection/wellknownTypes.
@@ -25,55 +24,61 @@
 	public class TypeUtils
 	{
 		#region static
-		private static readonly TypeUtils _sInstance = new TypeUtils();
+
+		private static readonly TypeUtils Instance = new TypeUtils();
 
 		public bool UseCache
 		{
 			get
 			{
-				return _sInstance._typeCache != null;
+				return Instance._typeCache != null;
 			}
+
 			set
 			{
-				lock (_sInstance._thisLock)
+				lock (Instance._thisLock)
 				{
-					if (_sInstance._typeCache == null && value)
-						_sInstance._typeCache = new Dictionary<string, Type>();
-					else if (_sInstance._typeCache != null && value == false)
-						_sInstance._typeCache = null;
+					if (Instance._typeCache == null && value)
+					{
+						Instance._typeCache = new Dictionary<string, Type>();
+					}
+					else if (Instance._typeCache != null && value == false)
+					{
+						Instance._typeCache = null;
+					}
 				}
 			}
 		}
 
 		public static Type FindType(string typeName)
 		{
-			return _sInstance.FindTypeInner(typeName, null, null, true);
+			return Instance.FindTypeInner(typeName, null, null, true);
 		}
 
 		public static Type FindType(string typeName, bool throwOnError)
 		{
-			return _sInstance.FindTypeInner(typeName, null, null, throwOnError);
+			return Instance.FindTypeInner(typeName, null, null, throwOnError);
 		}
 
 		public static Type FindType(string typeName, string preferredNS, bool throwOnError)
 		{
-			return _sInstance.FindTypeInner(typeName, preferredNS, null, throwOnError);
+			return Instance.FindTypeInner(typeName, preferredNS, null, throwOnError);
 		}
 
 		public static Type FindType(string typeName, string preferredNS, string preferredAssembly, bool throwOnError)
 		{
-			return _sInstance.FindTypeInner(typeName, preferredNS, preferredAssembly, throwOnError);
+			return Instance.FindTypeInner(typeName, preferredNS, preferredAssembly, throwOnError);
 		}
 
 		public static Type FindType(string typeName, string preferredNS, Assembly preferredAssembly, bool throwOnError)
 		{
-			return _sInstance.FindTypeInner(typeName, preferredNS, preferredAssembly.FullName, throwOnError);
+			return Instance.FindTypeInner(typeName, preferredNS, preferredAssembly.FullName, throwOnError);
 		}
 
-		//http://geekswithblogs.net/marcel/archive/2007/03/24/109722.aspx
+		//// http://geekswithblogs.net/marcel/archive/2007/03/24/109722.aspx
 		public static object CreateGeneric(Type generic, Type innerType, params object[] args)
 		{
-			var specificType = generic.MakeGenericType(new[] { innerType });
+			var specificType = generic.MakeGenericType(innerType);
 			return Activator.CreateInstance(specificType, args);
 		}
 		#endregion
@@ -87,15 +92,17 @@
 		{
 			var configElement = ConfigurationManager.GetSection("Genitor.Library.Shared.reflection") as XmlElement;
 
-			if (configElement == null)
+			if (null == configElement)
+			{
 				return;
+			}
 
 			foreach (XmlElement wkTypeElement in configElement.SelectNodes("wellknownTypes/add"))
 			{
 				var key = wkTypeElement.GetAttribute("key");
 				var type = wkTypeElement.GetAttribute("type");
 
-				_wellKnownTypes.Add(key, type);
+				this._wellKnownTypes.Add(key, type);
 			}
 
 			foreach (XmlElement wkTypeElement in configElement.SelectNodes("wellknownNamespaces/add"))
@@ -104,7 +111,7 @@
 				var ns = wkTypeElement.GetAttribute("namespace");
 				var asm = wkTypeElement.GetAttribute("assembly");
 
-				_wellKnownNamespaces.Add(key, new Pair<string, string>(ns, asm));
+				this._wellKnownNamespaces.Add(key, new Pair<string, string>(ns, asm));
 			}
 		}
 
@@ -112,37 +119,45 @@
 		{
 			Type type;
 
-			var key = String.Concat(name, "#", preferredNS, "#", preferredAssembly);
-			lock (_thisLock)
+			var key = string.Concat(name, "#", preferredNS, "#", preferredAssembly);
+			lock (this._thisLock)
 			{
-				if (_typeCache != null && _typeCache.TryGetValue(key, out type))
+				if (this._typeCache != null && this._typeCache.TryGetValue(key, out type))
+				{
 					return type;
+				}
 			}
 
-			type = FindTypeInner(name, preferredNS, preferredAssembly);
+			type = this.FindTypeInner(name, preferredNS, preferredAssembly);
 			if (type == null)
 			{
 				if (throwOnError)
+				{
 					throw new TypeLoadException("Type '" + name + "' was not found.");
+				}
 			}
 			else
 			{
-				lock (_thisLock)
+				lock (this._thisLock)
 				{
-					if (_typeCache != null)
-						_typeCache[key] = type;
+					if (this._typeCache != null)
+					{
+						this._typeCache[key] = type;
+					}
 				}
-
 			}
+
 			return type;
 		}
 
 		private Type FindTypeInner(string name, string preferredNS, string preferredAssembly)
 		{
 			if (name == null)
-				throw new ArgumentNullException("name");
+			{
+				throw new ArgumentNullException(nameof(name));
+			}
 
-			name = name.Trim().Replace(" ", "");
+			name = name.Trim().Replace(" ", string.Empty);
 
 			var commaPos = name.IndexOf(',');
 			var dollarPos = name.IndexOf('$');
@@ -151,7 +166,7 @@
 			if (dollarPos == 0)
 			{
 				string typeName;
-				return _wellKnownTypes.TryGetValue(name, out typeName) ? Type.GetType(typeName) : null;
+				return this._wellKnownTypes.TryGetValue(name, out typeName) ? Type.GetType(typeName) : null;
 			}
 
 			// pouze type bez assembly - zkusime najit a pak zkusime pripadne preferred srace
@@ -159,31 +174,63 @@
 			{
 				var type = Type.GetType(name);
 				if (type != null)
+				{
 					return type;
+				}
 
 				string typeName;
-				if (name.IndexOf('.') < 0 && !String.IsNullOrEmpty(preferredNS))
+				if (name.IndexOf('.') < 0 && !string.IsNullOrEmpty(preferredNS))
 				{
 					typeName = preferredNS + "." + name;
 					type = Type.GetType(typeName);
 					if (type != null)
+					{
 						return type;
+					}
 				}
 
-				if (String.IsNullOrEmpty(preferredAssembly))
+				if (string.IsNullOrEmpty(preferredAssembly))
+				{
 					return null;
+				}
 
 				typeName = name + "," + preferredAssembly;
 				type = Type.GetType(typeName);
 				if (type != null)
+				{
 					return type;
+				}
 
-				if (name.IndexOf('.') < 0 && !String.IsNullOrEmpty(preferredNS))
+				if (name.IndexOf('.') < 0 && !string.IsNullOrEmpty(preferredNS))
+				{
+					typeName = preferredNS + "." + name;
+					type = Type.GetType(typeName);
+					if (type != null)
+					{
+						return type;
+					}
+				}
+
+				if (string.IsNullOrEmpty(preferredAssembly))
+				{
+					return null;
+				}
+
+				typeName = name + "," + preferredAssembly;
+				type = Type.GetType(typeName);
+				if (type != null)
+				{
+					return type;
+				}
+
+				if (name.IndexOf('.') < 0 && !string.IsNullOrEmpty(preferredNS))
 				{
 					typeName = preferredNS + "." + typeName;
 					type = Type.GetType(typeName);
 					if (type != null)
+					{
 						return type;
+					}
 				}
 
 				return null;
@@ -193,10 +240,10 @@
 			if (dollarPos > 0)
 			{
 				Pair<string, string> wellknownPair;
-				if (_wellKnownNamespaces.TryGetValue(name.Substring(dollarPos), out wellknownPair))
+				if (this._wellKnownNamespaces.TryGetValue(name.Substring(dollarPos), out wellknownPair))
 				{
 					name = name.Remove(dollarPos);
-					return Type.GetType(String.Concat(wellknownPair.First, name, ",", wellknownPair.Second));
+					return Type.GetType(string.Concat(wellknownPair.First, name, ",", wellknownPair.Second));
 				}
 
 				return null;

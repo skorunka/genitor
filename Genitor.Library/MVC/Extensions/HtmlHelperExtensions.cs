@@ -1,6 +1,7 @@
-﻿// ReSharper disable CheckNamespace
+﻿#pragma warning disable SA1201 // Elements must appear in the correct order
+//// ReSharper disable CheckNamespace
 namespace Genitor.Library.MVC
-// ReSharper restore CheckNamespace
+//// ReSharper restore CheckNamespace
 {
 	using System;
 	using System.Collections.Generic;
@@ -79,7 +80,6 @@ namespace Genitor.Library.MVC
 			return new MvcHtmlString(sb.ToString());
 		}
 
-
 		public static MvcHtmlString RenderFlashMessage(this HtmlHelper html, string text, MessageTypes messageType)
 		{
 			return new MvcHtmlString(string.Format(_messageTypeFormats[messageType], text));
@@ -97,7 +97,7 @@ namespace Genitor.Library.MVC
 
 		#region NamedValidationSummary
 
-		public static readonly string SubmittedFormName = "NamedValidationSummary.SubmittedFormName";
+		public const string SubmittedFormName = "NamedValidationSummary.SubmittedFormName";
 
 		public static bool IsFormValid(this HtmlHelper htmlHelper, string formName)
 		{

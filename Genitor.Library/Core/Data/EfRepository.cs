@@ -53,7 +53,7 @@
 			{
 				if (entity == null)
 				{
-					throw new ArgumentNullException("entity");
+					throw new ArgumentNullException(nameof(entity));
 				}
 
 				this.Entities.Add(entity);
@@ -72,7 +72,7 @@
 			{
 				if (entity == null)
 				{
-					throw new ArgumentNullException("entity");
+					throw new ArgumentNullException(nameof(entity));
 				}
 
 				this._context.SaveChanges();
@@ -89,7 +89,7 @@
 			{
 				if (entity == null)
 				{
-					throw new ArgumentNullException("entity");
+					throw new ArgumentNullException(nameof(entity));
 				}
 
 				this.Entities.Remove(entity);
