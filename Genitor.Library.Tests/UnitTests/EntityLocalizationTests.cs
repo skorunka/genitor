@@ -1,12 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright company="" file="EntityLocalizationTests.cs">
-//   
-// </copyright>
-// 
-// --------------------------------------------------------------------------------------------------------------------
-
-
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
